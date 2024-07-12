@@ -1,15 +1,29 @@
-<form [formGroup]="formulario">
-    <div class="form-group">
+<form [formGroup]="formulario" (ngSubmit)="onSubmit()">
+    <div class="form-group" >
         <label for="nome">Nome</label>
-        <input type="text" class="form-control" id="nome"
+        <input type="text" class="form-control" id="nome" [ngClass]="aplicaCssErro('nome')"
         formControlName="nome" placeholder="Nome" >
+        <app-campo-control-erro 
+        [mostrarErro]="verificaValidTouched('nome')" 
+        msgErro="Nome é obrigatório.">
+        </app-campo-control-erro>
     </div>
     <div class="form-group">
         <label for="email">Email</label>
         <input type="email" class="form-control" id="email" formControlName="email"
-        placeholder="nome@email">
+        placeholder="nome@email" [ngClass]="aplicaCssErro('nome')">
+        <app-campo-control-erro 
+        [mostrarErro]="verificaValidTouched('email')" 
+        msgErro="Email é obrigatório.">
+        </app-campo-control-erro>
+        <app-campo-control-erro 
+            [mostrarErro]="verificaEmailInvalido()" 
+            msgErro="Email inválido">
+        </app-campo-control-erro>
     </div>
 
     <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-primary" (click)="resetar()">Cancelar</button>
+
     <app-form-debug [form]="formulario"></app-form-debug>
 </form>
