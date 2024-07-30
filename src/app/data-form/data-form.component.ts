@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-data-form',
@@ -43,6 +43,28 @@ export class DataFormComponent implements OnInit {
 
   }
 
+  consultaCEP(){
+    let cep = this.formulario.get('endereco.cep')?.value;
+    cep = cep.replace(/\D/g, '');
+    console.log(cep)
+    if(cep){
+      var validacep = /^[0-9]{8}$/;
+      if(validacep.test(cep)) {
+        this.resetarFormulario();
+        this.http.get(`https://viacep.com.br/ws/${cep}/json`)
+        .subscribe(
+          dados => {
+            this.populaDadosForm(dados)
+            console.log(dados)
+          } 
+            
+        );
+      }
+    } else {
+      console.log('vazio ou nulo')
+    }
+  }
+
   onSubmit(){
     console.log(this.formulario);
 
@@ -72,6 +94,32 @@ export class DataFormComponent implements OnInit {
       'is-invalid' : this.verificaValidTouched(campo),
       'is-valid' : !this.verificaValidTouched(campo) && !this.formulario.get(campo)?.pristine
     }
+  }
+
+
+  populaDadosForm(dados:any){
+    this.formulario.patchValue({
+      endereco: {
+        rua: dados.logradouro,
+        complemento: dados.complemento,
+        bairro: dados.bairro,
+        cidade: dados.localidade,
+        estado: dados.uf,
+      }
+    });
+    //console.log(formulario)
+  }
+
+  resetarFormulario(){
+    this.formulario.patchValue({
+      endereco: {
+        rua: null,
+        complemento: null,
+        bairro: null,
+        cidade: null,
+        estado: null,
+      }
+    });
   }
 
 
