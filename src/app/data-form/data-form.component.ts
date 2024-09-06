@@ -62,23 +62,42 @@ export class DataFormComponent implements OnInit {
       }
     } else {
       console.log('vazio ou nulo')
+      
     }
   }
 
   onSubmit(){
     console.log(this.formulario);
+    if(this.formulario.valid) {
+      this.http.post('https://httpbin.org/post', JSON.stringify(this.formulario.value))
+        .subscribe( dados => {
+          console.log(dados)
+          this.formulario.reset();
+        
+        },
+       (error: any) => alert('erro'));
 
-    this.http.post('https://httpbin.org/post', JSON.stringify(this.formulario.value))
-      .subscribe( dados => {
-        console.log(dados)
-        this.formulario.reset();
-      
-      },
-     (error: any) => alert('erro'));
+    } else {
+      console.log('formulario invalido');
+      this.verificaValidacoesForm(this.formulario)
+    }
+
+  }
+
+  verificaValidacoesForm(formgroup: FormGroup){
+    Object.keys(formgroup.controls).forEach(campo => {
+      console.log(campo);
+      const controle = formgroup.get(campo);
+      controle?.markAsDirty();
+
+      if(controle instanceof FormGroup) {
+        this.verificaValidacoesForm(controle);
+      }
+    });
   }
   
   verificaValidTouched(campo: string){
-    return !this.formulario.get(campo)?.valid && this.formulario.get(campo)?.touched;
+    return !this.formulario.get(campo)?.valid && (this.formulario.get(campo)?.touched || this.formulario.get(campo)?.dirty);
     
   }
 
