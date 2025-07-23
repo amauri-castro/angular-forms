@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { NgForm } from '@angular/forms';
+import { ConsultaCepService } from '../shared/services/consulta-cep.service';
 
 @Component({
   selector: 'app-template-form',
@@ -14,46 +15,36 @@ export class TemplateFormComponent implements OnInit {
     email: null
   }
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient,
+    private cepService: ConsultaCepService
+  ) { }
 
   ngOnInit(): void {
   }
 
-  onSubmit(form: any){
+  onSubmit(form: any) {
     console.log(form)
     //console.log(this.usuario)
 
     this.http.post('enderecoServer/formUsuario', JSON.stringify(form.value))
-      .subscribe( dados => {
+      .subscribe(dados => {
         console.log(dados);
         form.form.reset();
-      
-      
+
+
       })
   }
 
-  consultaCEP(cep: string, form: NgForm){
+  consultaCEP(cep: string, form: NgForm) {
     cep = cep.replace(/\D/g, '');
-    console.log(cep)
-    if(cep){
-      var validacep = /^[0-9]{8}$/;
-      if(validacep.test(cep)) {
-        this.resetarFormulario(form);
-        this.http.get(`https://viacep.com.br/ws/${cep}/json`)
-        .subscribe(
-          dados => {
-            this.populaDadosForm(dados, form)
-            console.log(dados)
-          } 
-            
-        );
-      }
-    } else {
-      console.log('vazio ou nulo')
+
+    if (cep !== null && cep !== '') {
+      this.cepService.consultaCEP(cep)
+        ?.subscribe(dados => { this.populaDadosForm(dados, form) })
     }
   }
 
-  populaDadosForm(dados:any, formulario: NgForm){
+  populaDadosForm(dados: any, formulario: NgForm) {
     /*
     formulario.setValue({
       nome: formulario.value.nome,
@@ -82,11 +73,11 @@ export class TemplateFormComponent implements OnInit {
     //console.log(formulario)
   }
 
-  verificaValidTouched(campo: any){
+  verificaValidTouched(campo: any) {
     return !campo.valid && campo.touched;
   }
 
-  resetarFormulario(formulario: NgForm){
+  resetarFormulario(formulario: NgForm) {
     formulario.form.patchValue({
       endereco: {
         rua: null,
@@ -97,7 +88,7 @@ export class TemplateFormComponent implements OnInit {
       }
     });
   }
-  aplicaCssErro(campo: any){
+  aplicaCssErro(campo: any) {
     return {
       'was-validated': this.verificaValidTouched(campo)
     }

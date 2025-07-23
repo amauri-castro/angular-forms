@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
 import { DropdownService } from '../shared/services/dropdown.service';
 import { Estado } from 'src/assets/models/estado';
+import { ConsultaCepService } from '../shared/services/consulta-cep.service';
 
 @Component({
   selector: 'app-data-form',
@@ -17,11 +18,12 @@ export class DataFormComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private http: HttpClient,
-    private dropdownService: DropdownService
+    private dropdownService: DropdownService,
+    private cepService: ConsultaCepService
   ) {
 
     this.formulario = this.formBuilder.group({
-      nome: [null,Validators.required],
+      nome: [null, Validators.required],
       email: [null, [Validators.required, Validators.email]],
 
       endereco: this.formBuilder.group({
@@ -36,8 +38,8 @@ export class DataFormComponent implements OnInit {
       })
 
     });
-    
-   }
+
+  }
 
   ngOnInit(): void {
     this.dropdownService.getEstadosBr().subscribe({
@@ -52,39 +54,18 @@ export class DataFormComponent implements OnInit {
 
   }
 
-  consultaCEP(){
-    let cep = this.formulario.get('endereco.cep')?.value;
-    cep = cep.replace(/\D/g, '');
-    console.log(cep)
-    if(cep){
-      var validacep = /^[0-9]{8}$/;
-      if(validacep.test(cep)) {
-        this.resetarFormulario();
-        this.http.get(`https://viacep.com.br/ws/${cep}/json`)
-        .subscribe(
-          dados => {
-            this.populaDadosForm(dados)
-            console.log(dados)
-          } 
-            
-        );
-      }
-    } else {
-      console.log('vazio ou nulo')
-      
-    }
-  }
 
-  onSubmit(){
+
+  onSubmit() {
     console.log(this.formulario);
-    if(this.formulario.valid) {
+    if (this.formulario.valid) {
       this.http.post('https://httpbin.org/post', JSON.stringify(this.formulario.value))
-        .subscribe( dados => {
+        .subscribe(dados => {
           console.log(dados)
           this.formulario.reset();
-        
+
         },
-       (error: any) => alert('erro'));
+          (error: any) => alert('erro'));
 
     } else {
       console.log('formulario invalido');
@@ -93,39 +74,48 @@ export class DataFormComponent implements OnInit {
 
   }
 
-  verificaValidacoesForm(formgroup: FormGroup){
+  verificaValidacoesForm(formgroup: FormGroup) {
     Object.keys(formgroup.controls).forEach(campo => {
       console.log(campo);
       const controle = formgroup.get(campo);
       controle?.markAsDirty();
 
-      if(controle instanceof FormGroup) {
+      if (controle instanceof FormGroup) {
         this.verificaValidacoesForm(controle);
       }
     });
   }
-  
-  verificaValidTouched(campo: string){
+
+  verificaValidTouched(campo: string) {
     return !this.formulario.get(campo)?.valid && (this.formulario.get(campo)?.touched || this.formulario.get(campo)?.dirty);
-    
+
   }
 
-  verificaEmailInvalido(){
+  verificaEmailInvalido() {
     let campoEmail = this.formulario.get('email');
-    if(campoEmail?.errors){
+    if (campoEmail?.errors) {
       return campoEmail.errors['email'] && campoEmail.touched;
     }
   }
 
-  aplicaCssErro(campo: string){
+  aplicaCssErro(campo: string) {
     return {
-      'is-invalid' : this.verificaValidTouched(campo),
-      'is-valid' : !this.verificaValidTouched(campo) && !this.formulario.get(campo)?.pristine
+      'is-invalid': this.verificaValidTouched(campo),
+      'is-valid': !this.verificaValidTouched(campo) && !this.formulario.get(campo)?.pristine
+    }
+  }
+
+  consultaCEP() {
+    let cep = this.formulario.get('endereco.cep')?.value;
+
+    if (cep !== null && cep !== '') {
+      this.cepService.consultaCEP(cep)
+        ?.subscribe(dados => { this.populaDadosForm(dados) })
     }
   }
 
 
-  populaDadosForm(dados:any){
+  populaDadosForm(dados: any) {
     this.formulario.patchValue({
       endereco: {
         rua: dados.logradouro,
@@ -138,7 +128,7 @@ export class DataFormComponent implements OnInit {
     //console.log(formulario)
   }
 
-  resetarFormulario(){
+  resetarFormulario() {
     this.formulario.patchValue({
       endereco: {
         rua: null,
@@ -152,7 +142,7 @@ export class DataFormComponent implements OnInit {
 
 
 
-  resetar(){
+  resetar() {
     this.formulario.reset();
   }
 
