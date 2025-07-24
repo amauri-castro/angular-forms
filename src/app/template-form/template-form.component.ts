@@ -38,7 +38,7 @@ export class TemplateFormComponent implements OnInit {
   consultaCEP(cep: string, form: NgForm) {
     cep = cep.replace(/\D/g, '');
 
-    if (cep !== null && cep !== '') {
+    if (cep != null && cep !== '') {
       this.cepService.consultaCEP(cep)
         ?.subscribe(dados => { this.populaDadosForm(dados, form) })
     }

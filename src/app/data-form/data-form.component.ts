@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
 import { DropdownService } from '../shared/services/dropdown.service';
 import { Estado } from 'src/assets/models/estado';
 import { ConsultaCepService } from '../shared/services/consulta-cep.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-data-form',
@@ -13,7 +14,7 @@ import { ConsultaCepService } from '../shared/services/consulta-cep.service';
 export class DataFormComponent implements OnInit {
 
   formulario: FormGroup;
-  estados: Estado[] = [];
+  estados?: Observable<Estado[]>;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -42,16 +43,7 @@ export class DataFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.dropdownService.getEstadosBr().subscribe({
-      next: (dados: Estado[]) => {
-        this.estados = dados;
-        console.log(dados)
-      },
-      error: (err: any) => {
-        console.log(err);
-      }
-    })
-
+    this.estados = this.dropdownService.getEstadosBr();
   }
 
 
@@ -108,7 +100,7 @@ export class DataFormComponent implements OnInit {
   consultaCEP() {
     let cep = this.formulario.get('endereco.cep')?.value;
 
-    if (cep !== null && cep !== '') {
+    if (cep != null && cep !== '') {
       this.cepService.consultaCEP(cep)
         ?.subscribe(dados => { this.populaDadosForm(dados) })
     }
