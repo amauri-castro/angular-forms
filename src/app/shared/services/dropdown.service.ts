@@ -19,4 +19,21 @@ export class DropdownService {
       {nome: 'Dev', nivel: 'Senior', descricao: 'Dev Senior'},
     ]
   }
+
+  getTecnologias() {
+    return [
+      {nome: 'java', descricao: 'Java'},
+      {nome: 'javascript', descricao: 'JavaScript'},
+      {nome: 'php', descricao: 'PHP'},
+      {nome: 'python', descricao: 'Python'},
+      {nome: 'ruby', descricao: 'Ruby'}
+    ]
+  }
+
+  getNewsletter() {
+    return [
+      {valor: 's', descricao: 'Sim'},
+      {valor: 'n', descricao: 'Não'}
+    ];
+  }
 }
