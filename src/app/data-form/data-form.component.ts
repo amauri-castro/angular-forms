@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, NgForm, Validators } from '@angular/forms';
 import { DropdownService } from '../shared/services/dropdown.service';
 import { Estado } from 'src/assets/models/estado';
 import { ConsultaCepService } from '../shared/services/consulta-cep.service';
@@ -18,6 +18,9 @@ export class DataFormComponent implements OnInit {
   cargos: any[] = [];
   tecnologias: any[] = [];
   newsletterOptions: any[] = [];
+
+  frameworks: string[] = ['Angular', 'React', 'Vue', 'Ember', 'Backbone'];
+
 
   constructor(
     private formBuilder: FormBuilder,
@@ -45,6 +48,7 @@ export class DataFormComponent implements OnInit {
       tecnologias: [null],
       newsletter: ['s'],
       termos: [null, Validators.pattern('true')],
+      frameworks: this.buildFrameworks()
 
     });
 
@@ -57,10 +61,28 @@ export class DataFormComponent implements OnInit {
     this.newsletterOptions = this.dropdownService.getNewsletter();
   }
 
+  buildFrameworks() {
+
+    const values = this.frameworks.map(v => new FormControl(false));
+
+    return this.formBuilder.array(values);
+  }
+
   onSubmit() {
     console.log(this.formulario);
+
+    let valueSubmit = Object.assign({}, this.formulario.value);
+
+    valueSubmit = Object.assign(valueSubmit, {
+      frameworks: valueSubmit.frameworks
+        .map((v: any, i: any) => v ? this.frameworks[i] : null)
+        .filter((v:any) => v !== null)
+    });
+
+    console.log(valueSubmit)
+
     if (this.formulario.valid) {
-      this.http.post('https://httpbin.org/post', JSON.stringify(this.formulario.value))
+      this.http.post('https://httpbin.org/post', JSON.stringify(valueSubmit))
         .subscribe(dados => {
           console.log(dados)
           this.formulario.reset();
@@ -164,6 +186,10 @@ export class DataFormComponent implements OnInit {
 
   setarTecnologia() {
     this.formulario.get('tecnologias')?.setValue(['php', 'python']);
+  }
+
+  getFrameworksControls() {
+    return this.formulario.get('frameworks') ? (<FormArray>this.formulario.get('frameworks')).controls : null;
   }
 
 }
